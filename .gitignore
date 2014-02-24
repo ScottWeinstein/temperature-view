@@ -1,0 +1,7 @@
+node_modules/
+.tmp/
+app/bower_components
+app/js/savedData.json
+dist/
+npm-debug.log
+tagPassword.json

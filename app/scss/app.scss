@@ -1,0 +1,32 @@
+@import "normalize";
+@import "settings";
+@import "foundation";
+
+.box {
+  font: 10px sans-serif;
+
+  line, rect, circle {
+      fill: #fff;
+      stroke: #000;
+      stroke-width: 1.5px;
+    }
+
+    .center {
+      stroke-dasharray: 3,3;
+    }
+
+    .outlier {
+      fill: none;
+      stroke: #ccc;
+    }
+}
+
+.sparkline {
+  fill: none;
+  stroke: #000;
+  stroke-width: 0.5px;
+}
+.sparkcircle {
+  fill: #f00;
+  stroke: none;
+}
