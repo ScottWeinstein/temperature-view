@@ -1,13 +1,14 @@
+/* globals d3:true, Q:true */
 var app = (function() {
 
     'use strict';
     var useFakeData = 1;
 
     $.ajaxSetup({
-        type: "POST",
-        contentType: "application/json; charset=utf-8",
-        data: "{}",
-        dataType: "json",
+        type: 'POST',
+        contentType: 'application/json; charset=utf-8',
+//        data: '{}',
+        dataType: 'json',
         xhrFields: {
             withCredentials: true
         },
@@ -33,45 +34,35 @@ var app = (function() {
 
     // Returns a function to compute the interquartile range.
     function iqr(k) {
-      return function(d, i) {
-        var q1 = d.quartiles[0],
-            q3 = d.quartiles[2],
-            iqr = (q3 - q1) * k,
-            i = -1,
-            j = d.length;
-        while (d[++i] < q1 - iqr);
-        while (d[--j] > q3 + iqr);
-        return [i, j];
-      };
+        return function(d, i) {
+            i = -1;
+            var q1 = d.quartiles[0],
+                q3 = d.quartiles[2],
+                iqr = (q3 - q1) * k,
+                j = d.length;
+            while (d[++i] < q1 - iqr){}
+            while (d[--j] > q3 + iqr){}
+            return [i, j];
+        };
     }
 
     return {
-        signIn: function() {
-            var loginData = {};
-            return $.post('https://www.mytaglist.com/ethAccount.asmx/SignIn', JSON.stringify(loginData))
-        },
-
         getData: function (id) {
-            var dateFormat = d3.time.format("%Y%m%d");
-            var timeFormat = d3.time.format("%H%M%S");
-            var qry;
-            if (useFakeData) {
-                qry = $.get('/js/savedData.json');
-            } else {
-                qry = $.post('https://www.mytaglist.com/ethLogs.asmx/GetTemperatureRawData', JSON.stringify({id:id}));
-            }
+            var dateFormat = d3.time.format('%Y%m%d');
+            var timeFormat = d3.time.format('%H%M%S');
+            var qry = $.get('api/temps/' + id);
 
             return Q(qry)
                     .then(function(networkData) {
-                        var csv = networkData.d.map(function(item) {
-                            var date = new Date(item.date + ', 2014 ' + item.time);
+                        var csv = networkData.map(function(item) {
+                            var date = new Date(item.time);
                             var day = +dateFormat(date);
                             var time = +timeFormat(date);
                             return {
                                 date: date,
                                 day: day,
                                 time: time,
-                                t: (item.temp_degC * 9 /5) + 32,
+                                t: (item.t * 9 /5) + 32,
                                 nightDay: time < 63000
                             };
                         })
@@ -84,6 +75,7 @@ var app = (function() {
         plot: function() {
             this.getData(0)
             .done(function(csv) {
+                csv = csv.reverse();
                 var data = [];
                 var start = csv[0].day;
                 csv.forEach(function(x) {
@@ -120,32 +112,32 @@ var app = (function() {
                 });
 
                 //console.log(min, max, data)
-                console.log(data[0].spark)
+                console.log(data[0].spark);
 
-                var els = d3.select("ul").selectAll("li")
+                d3.select('ul').selectAll('li')
                 .data(data.reverse())
                 .enter()
                 .append('li')
                 .call(function addHeader(sel) {
                     var h6 = sel
-                        .append('h6')
-                    h6.append('span').text(function(di) { return di.d.day + ' (' + di.box.length + ')';})
+                        .append('h6');
+                    h6.append('span').text(function(di) { return di.d.day + ' (' + di.box.length + ')';});
 
                     h6.append('div').datum(function(d) { return (d.spark && d.spark.length > 5) ? d.spark : d.box; })
-                    .call(spark)
+                    .call(spark);
                 })
-                .append("svg")
+                .append('svg')
                 .datum(function(di) { return di.box; })
-                    .attr("class", "box")
-                    .attr("width", width + margin.left + margin.right)
-                    .attr("height", height + margin.bottom + margin.top)
-                .append("g")
-                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+                    .attr('class', 'box')
+                    .attr('width', width + margin.left + margin.right)
+                    .attr('height', height + margin.bottom + margin.top)
+                .append('g')
+                    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
                     .call(chart);
 
             });
         }
-    }
+    };
 })();
 
 (function() {
