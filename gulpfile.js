@@ -11,7 +11,7 @@ var $ = require('gulp-load-plugins')();
 // Styles
 gulp.task('styles', function () {
     return gulp.src('app/styles/main.scss')
-        .pipe($.rubySass({
+        .pipe($.sass({
           style: 'expanded',
           loadPath: ['app/bower_components']
         }))
